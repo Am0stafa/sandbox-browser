@@ -1,136 +1,239 @@
-<div align="center">
-  <a href="https://github.com/m1k1o/neko" title="Neko's Github repository.">
-    <img src="https://raw.githubusercontent.com/m1k1o/neko/master/docs/_media/logo.png" width="400" height="auto"/>
-  </a>
+# Jenkins Cluster Administration on AWS
 
-</div>
+A guide demonstrating Jenkins cluster administration through implementing a secure, distributed Jenkins environment on AWS infrastructure.
+
+![Jenkins Cluster Architecture](architecture-diagram.png)
+
+## Table of Contents
+1. [Overview](#overview)
+2. [Architecture Design](#architecture-design)
+3. [AWS Infrastructure](#aws-infrastructure)
+4. [Jenkins Cluster Setup](#jenkins-cluster-setup)
+5. [Security Implementation](#security-implementation)
+6. [Pipeline Example](#pipeline-example)
+7. [Administration Guide](#administration-guide)
+
+## Overview
+
+This project showcases  Jenkins administration capabilities by implementing a distributed Jenkins cluster on AWS. It demonstrates expertise in:
+
+- Jenkins distributed architecture management
+- AWS infrastructure design and implementation
+- Infrastructure as Code (IaC) with Terraform
+- Jenkins Configuration as Code (JCasC)
+- Security best practices in both AWS and Jenkins
+- CI/CD pipeline implementation
+
+### Key Features
+- Multi-node Jenkins cluster with dedicated build and deploy nodes
+- Secure network architecture with public/private subnets
+- Shared storage implementation using EFS
+- Infrastructure as Code deployment
+- Jenkins configuration automation
+- Example pipeline for n.eko application
+
+## Architecture Design
+
+### System Components
+```
+Jenkins Cluster:
+├── Master Node (Controller)
+│   ├── Jenkins Configuration as Code
+│   ├── Security Configuration
+│   └── Job Management
+├── Build Node
+│   ├── Docker Engine
+│   └── Build Tools
+└── Deploy Node
+    ├── AWS CLI
+    └── Deployment Scripts
+```
+
+### Network Architecture
+```
+AWS Infrastructure:
+├── VPC (10.0.0.0/16)
+│   ├── Public Subnet (10.0.1.0/24)
+│   │   ├── NAT Instance
+│   │   └── Production Server
+│   └── Private Subnet (10.0.2.0/24)
+│       ├── Jenkins Master
+│       ├── Build Node
+│       └── Deploy Node
+└── Security Groups
+    ├── NAT Instance SG
+    ├── Jenkins Master SG
+    ├── Build Node SG
+    └── Deploy Node SG
+```
+
+## AWS Infrastructure
+
+### VPC Configuration
+- Custom VPC with public and private subnets
+- NAT Instance for private subnet internet access
+- Security groups for fine-grained access control
+- EFS for shared storage across nodes
 
 
-# n.eko
+### Build Node Setup
+- Dedicated EC2 instance for build operations
+- Docker engine installation and configuration
+- Build tools and dependencies
+- SSH key-based authentication with master
 
-Welcome to Neko, a self-hosted virtual browser that runs in Docker and uses WebRTC technology. Neko is a powerful tool that allows you to **run a fully-functional browser in a virtual environment**, giving you the ability to **access the internet securely and privately from anywhere**. With Neko, you can browse the web, **run applications**, and perform other tasks just as you would on a regular browser, all within a **secure and isolated environment**. Whether you are a developer looking to test web applications, a **privacy-conscious user seeking a secure browsing experience**, or simply someone who wants to take advantage of the **convenience and flexibility of a virtual browser**, Neko is the perfect solution.
+### Deploy Node Setup
+- Dedicated EC2 instance for deployments
+- AWS CLI and necessary deployment tools
+- IAM role for AWS resource access
+- Deployment scripts and configurations
 
-In addition to its security and privacy features, Neko offers the **ability for multiple users to access it simultaneously**. This makes it an ideal solution for teams or organizations that need to share access to a browser, as well as for individuals who want to use **multiple devices to access the same virtual environment**. With Neko, you can **easily and securely share access to a browser with others**, without having to worry about maintaining separate configurations or settings. Whether you need to **collaborate on a project**, access shared resources, or simply want to **share access to a browser with friends or family**, Neko makes it easy to do so.
+## Security Implementation
 
-Neko is also a great tool for **hosting watch parties** and interactive presentations. With its virtual browser capabilities, Neko allows you to host watch parties and presentations that are **accessible from anywhere**, without the need for in-person gatherings. This makes it easy to **stay connected with friends and colleagues**, even when you are unable to meet in person. With Neko, you can easily host a watch party or give an **interactive presentation**, whether it's for leisure or work. Simply invite your guests to join the virtual environment, and you can share the screen and **interact with them in real-time**.
+### Network Security
+- Private subnet placement for Jenkins nodes
+- NAT Instance for controlled outbound access
+- Security group rules for minimal required access
+- SSH key-based authentication between nodes
 
-## About
+### Jenkins Security
+- RBAC implementation
+- Plugin security configuration
+- Credential management
 
-This app uses WebRTC to stream a desktop inside of a docker container, original author made this because [rabb.it](https://en.wikipedia.org/wiki/Rabb.it) went under and his internet could not handle streaming and discord kept crashing when his friend attempted to. He just wanted to watch anime with his friends ლ(ಠ益ಠლ) so he started digging throughout the internet and found a few *kinda* clones, but none of them had the virtual browser, then he found [Turtus](https://github.com/Khauri/Turtus) and he was able to figure out the rest.
+## Jenkins Configuration as Code (JCasC)
 
-Then I found [this](https://github.com/nurdism/neko) project and started to dig into it. I really liked the idea of having collaborative browser browsing together with multiple people, so I created a fork. Initially, I wanted to merge my changes to the upstream repository, but the original author did not have time for this project anymore and it got eventually archived.
+### What is JCasC?
+Jenkins Configuration as Code (JCasC) allows you to define Jenkins configuration parameters in YAML. This captures all configuration parameters and values that would typically be set through the Jenkins UI, enabling automated configuration management.
 
-## Use-cases and comparison
+### Why Use JCasC?
 
-Neko started as a virtual browser that is streamed using WebRTC to multiple users.
-- It is **not only limited to a browser**; it can run anything that runs on linux (e.g. VLC). Browser only happens to be the most popular and widely used use-case.
-- In fact, it is not limited to a single program either; you can install a full desktop environment (e.g. XFCE, KDE).
-- Speaking of limits, it does not need to run in a container; you could install neko on your host, connect to your X server and control your whole VM.
-- Theoretically it is not limited to only X server, anything that can be controlled and scraped periodically for images could be used instead.
-  - Like implementing RDP or VNC protocol, where neko would only act as WebRTC relay server. This is currently only future.
+#### 1. Configuration Management Benefits
+- **Environment Consistency**: Maintain identical configurations across environments
 
-Primary use case is connecting with multiple people, leveraging real time synchronization and interactivity:
-- **Watch party** - watching video content together with multiple people and reacting to it (chat, emotes) - open source alternative to [giggl.app](https://giggl.app/) or [hyperbeam](https://watch.hyperbeam.com).
-- **Interactive presentation** - not only screen sharing, but others can control the screen.
-- **Collaborative tool** - brainstorming ideas, cobrowsing, code debugging together.
-- **Support/Teaching** - interactively guiding people in controlled environment.
-- **Embed anything** - embed virtual browser in your web app - open source alternative to [hyperbeam API](https://hyperbeam.com/).
-  - open any third-party website or application, synchronize audio and video flawlessly among multiple participants.
-  - request rooms using API with [neko-rooms](https://github.com/m1k1o/neko-rooms).
+#### 2. Automation Benefits
+- **Reduced Manual Work**: Eliminates repetitive UI-based configuration
+- **Faster Deployment**: Quickly set up new Jenkins instances
+- **Reproducible Setup**: Guarantee identical configurations every time
+- **Configuration Testing**: Test changes before applying to production
 
-Other use cases that benefit from single-user:
-- **Personal workspace** - streaming containerized apps and desktops to end-users - similar to [kasm](https://www.kasmweb.com/).
-- **Persistent browser** - own browser with persistent cookies available anywhere - similar to [mightyapp](https://www.mightyapp.com/).
-  - no state is left on the host browser after terminating the connection.
-  - sensitive data like cookies are not transferred - only video is shared.
-- **Throwaway browser** - a better solution for planning secret parties and buying birthday gifts off the internet.
-  - use Tor Browser and [VPN](https://github.com/m1k1o/neko-vpn) for additional anonymity.
-  - mitigates risk of OS fingerprinting and browser vulnerabilities by running in container.
-- **Session broadcasting** - broadcast room content using RTMP (to e.g. twitch or youtube...).
-- **Session recording** - broadcast RTMP can be saved to a file using e.g. [nginx-rtmp](https://www.nginx.com/products/nginx/modules/rtmp-media-streaming/)
-  - have clean environment when recording tutorials.
-  - no need to hide bookmarks or use incognito mode.
-- **Jump host** - access your internal applications securely without the need for VPN.
-- **Automated browser** - you can install [playwright](https://playwright.dev/) or [puppeteer](https://pptr.dev/) and automate tasks while being able to actively intercept them.
+### Example JCasC Configuration
+Here's a basic example of a JCasC configuration file:
 
-Compared to clientless remote desktop gateway (e.g. [Apache Guacamole](https://guacamole.apache.org/) or [websockify](https://github.com/novnc/websockify) with [noVNC](https://novnc.com/)), installed with remote desktop server along with desired program (e.g. [linuxserver/firefox](https://docs.linuxserver.io/images/docker-firefox)) provides neko additionally:
-- **Smooth video** because it uses WebRTC and not images sent over WebSockets.
-- **Built in audio** support, what is not part of Apache Guacamole or noVNC.
-- **Multi-participant control**, what is not natively supported by Apache Guacamole or noVNC.
+```yaml
+jenkins:
+  systemMessage: "Jenkins configured automatically by Jenkins Configuration as Code plugin\n\n"
+  securityRealm:
+    ldap:
+      configurations:
+        - groupMembershipStrategy:
+            fromUserRecord:
+              attributeName: "memberOf"
+          inhibitInferRootDN: false
+          rootDN: "dc=acme,dc=org"
+          server: "ldaps://ldap.acme.org:1636"
 
-### Supported browsers
+  nodes:
+    - permanent:
+        name: "static-agent"
+        remoteFS: "/home/jenkins"
+        launcher:
+          inbound:
+            workDirSettings:
+              disabled: true
+              failIfWorkDirIsMissing: false
+              internalDir: "remoting"
+              workDirPath: "/tmp"
+```
 
-<div align="center">
-  <img src="https://raw.githubusercontent.com/m1k1o/neko/master/docs/_media/icons/firefox.svg" title="m1k1o/neko:firefox" width="60" height="auto"/>
-  <img src="https://raw.githubusercontent.com/m1k1o/neko/master/docs/_media/icons/google-chrome.svg" title="m1k1o/neko:google-chrome" width="60" height="auto"/>
-  <img src="https://raw.githubusercontent.com/m1k1o/neko/master/docs/_media/icons/chromium.svg" title="m1k1o/neko:chromium" width="60" height="auto"/>
-  <img src="https://raw.githubusercontent.com/m1k1o/neko/master/docs/_media/icons/microsoft-edge.svg" title="m1k1o/neko:microsoft-edge" width="60" height="auto"/>
-  <img src="https://raw.githubusercontent.com/m1k1o/neko/master/docs/_media/icons/brave.svg" title="m1k1o/neko:brave" width="60" height="auto"/>
-  <img src="https://raw.githubusercontent.com/m1k1o/neko/master/docs/_media/icons/vivaldi.svg" title="m1k1o/neko:vivaldi" width="60" height="auto"/>
-  <img src="https://raw.githubusercontent.com/m1k1o/neko/master/docs/_media/icons/opera.svg" title="m1k1o/neko:opera" width="60" height="auto"/>
-  <img src="https://raw.githubusercontent.com/m1k1o/neko/master/docs/_media/icons/tor-browser.svg" title="m1k1o/neko:tor-browser" width="60" height="auto"/>
-</div>
+### Implementation Best Practices
 
-### Other programs
+1. **File Organization**:
+   - Store JCasC YAML files in source control
+   - Use separate files for different configuration aspects
+   - Maintain environment-specific configurations
 
-<div align="center">
-  <img src="https://raw.githubusercontent.com/m1k1o/neko/master/docs/_media/icons/remmina.png" title="m1k1o/neko:remmina" width="60" height="auto"/>
-  <img src="https://raw.githubusercontent.com/m1k1o/neko/master/docs/_media/icons/vlc.svg" title="m1k1o/neko:vlc" width="60" height="auto"/>
-  <img src="https://raw.githubusercontent.com/m1k1o/neko/master/docs/_media/icons/xfce.svg" title="m1k1o/neko:xfce" width="60" height="auto"/>
-  <img src="https://raw.githubusercontent.com/m1k1o/neko/master/docs/_media/icons/kde.svg" title="m1k1o/neko:kde" width="60" height="auto"/>
+2. **Security Considerations**:
+   - Keep sensitive data in secure credential stores
+   - Use environment variables for dynamic values
+   - Implement proper access controls for configuration files
 
-  ... others in <a href="https://github.com/m1k1o/neko-apps">m1k1o/neko-apps</a>
-</div>
+3. **Validation and Testing**:
+   - Validate YAML syntax before deployment
+   - Test configurations in a staging environment
+   - Use Jenkins' built-in configuration validation
 
-### Features
+### Historical Context
+Traditionally, Jenkins administrators used Apache Groovy init scripts to automate configuration. While powerful, these scripts required deep understanding of Jenkins APIs and provided limited protection against configuration errors. JCasC provides a more structured and safer approach to configuration management [source](https://www.jenkins.io/doc/book/managing/casc/).
 
-  * Text Chat (With basic markdown support, discord flavor)
-  * Admin users (Kick, Ban & Force Give/Release Controls, Lock room)
-  * Clipboard synchronization (on [supported browsers](https://developer.mozilla.org/en-US/docs/Web/API/Clipboard/readText))
-  * Emote overlay
-  * Ignore user (chat and emotes)
-  * Persistent settings
-  * Automatic Login with custom url args. (add `?usr=<your-user-name>&pwd=<room-pass>` to the url.)
-  * Broadcasting room content using RTMP (to e.g. twitch or youtube...)
-  * Bidirectional file transfer (if enabled)
+### File Location and Management
+The JCasC configuration can be specified in multiple ways:
+- Default location: `$JENKINS_HOME/jenkins.yaml`
+- Environment variable: `CASC_JENKINS_CONFIG`
+- Java property: `casc.jenkins.config`
 
-<div align="center">
+The configuration can be loaded from:
+- Local file system paths
+- Folders containing multiple config files
+- URLs pointing to remote configurations
+[source](https://plugins.jenkins.io/configuration-as-code/)
 
-With `NEKO_FILE_TRANSFER_ENABLED=true`:
+### Integration with Other Tools
+JCasC works well with other DevOps tools and practices:
+- **Infrastructure as Code**: Combine with tools like Terraform
+- **Container Orchestration**: Easy integration with Kubernetes
+- **CI/CD Pipelines**: Include configuration updates in deployment pipelines
+- **Secret Management**: Integration with vault services for sensitive data
 
-<img src="https://raw.githubusercontent.com/m1k1o/neko/master/docs/_media/file-transfer.gif" width="650" height="auto"/>
-</div>
 
-### Why n.eko?
+## Pipeline Example
 
-I like cats 🐱 (`Neko` is the Japanese word for cat), I'm a weeb/nerd.
+Using n.eko application to demonstrate the cluster's capabilities:
 
-***But why the cat butt?*** Because cats are *assholes*, but you love them anyways.
+```groovy
+pipeline {
+    agent none
+    
+    stages {
+        stage('Build Docker Image') {
+            agent { label 'docker' }
+            steps {
+                script {
+                    docker.build('neko:${BUILD_NUMBER}')
+                }
+            }
+        }
+        
+        stage('Deploy') {
+            agent { label 'deploy' }
+            steps {
+                script {
+                    // Deployment steps
+                }
+            }
+        }
+    }
+}
+```
 
-## Multiple rooms
+## Administration Guide
 
-For n.eko room management software, visit [neko-rooms](https://github.com/m1k1o/neko-rooms).
+### Routine Maintenance
+1. System Updates
+2. Plugin Management
+3. Backup Procedures
+4. Log Rotation
+5. Performance Monitoring
 
-It also offers zero-knowledge [installation script (with HTTPS and Traefik)](https://github.com/m1k1o/neko-rooms/#zero-knowledge-installation-with-https-and-traefik).
+### Troubleshooting
+1. Node Connection Issues
+2. Build Failures
+3. Network Connectivity
+4. Storage Problems
 
-## Documentation
+### Scaling Guidelines
+1. Adding Build Nodes
+2. Storage Expansion
+3. Performance Optimization
+4. Load Balancing
 
-* [Getting Started](https://neko.m1k1o.net/#/getting-started/)
-  * [Quick Start](https://neko.m1k1o.net/#/getting-started/quick-start)
-  * [Examples](https://neko.m1k1o.net/#/getting-started/examples)
-  * [Reverse Proxy](https://neko.m1k1o.net/#/getting-started/reverse-proxy)
-  * [Configuration](https://neko.m1k1o.net/#/getting-started/configuration)
-  * [Troubleshooting](https://neko.m1k1o.net/#/getting-started/troubleshooting)
-* [Mobile Support](https://neko.m1k1o.net/#/mobile-support)
-* [Contributing](https://neko.m1k1o.net/#/contributing)
-  * [Non Goals](https://neko.m1k1o.net/#/non-goals)
-  * [Technologies](https://neko.m1k1o.net/#/technologies)
-* [Changelog](https://neko.m1k1o.net/#/changelog)
-
-## How to contribute? How to build?
-
-Navigate to [.docker](.docker) folder for further information.
-
-## Support
-
-If you want to support this project, you can do it [here](https://github.com/sponsors/m1k1o).
