@@ -2,7 +2,7 @@
 
 A guide demonstrating Jenkins cluster administration through implementing a secure, distributed Jenkins environment on AWS infrastructure.
 
-![diagram-export-10-30-2024-8_30_33-PM](https://github.com/user-attachments/assets/75f45fb2-f2fe-4e1e-82be-6b1117ba3fb8)
+![diagram-export-10-30-2024-8_34_24-PM](https://github.com/user-attachments/assets/d31676d2-9612-45a9-b377-1dbc57e977f7)
 
 ## Table of Contents
 1. [Overview](#overview)
